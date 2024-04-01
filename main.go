@@ -43,6 +43,9 @@ func main() {
 		if *suffix != "" {
 			newLine = string(line) + *suffix
 		}
+		if *suffix != "" && *prefix != "" {
+			newLine = *prefix + string(line) + *suffix
+		}
 
 		w.Write([]byte(newLine + "\n"))
 	}
