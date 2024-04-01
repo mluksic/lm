@@ -17,7 +17,7 @@ func main() {
 	file, err := os.Open(*fileName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 	defer file.Close()
 
@@ -54,5 +54,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	os.Exit(2)
+	os.Exit(0)
 }
