@@ -22,6 +22,10 @@ func main() {
 	defer file.Close()
 
 	newFile, err := os.Create(*fileName + "_output")
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		os.Exit(1)
+	}
 	defer newFile.Close()
 
 	r := bufio.NewReader(file)
@@ -44,5 +48,11 @@ func main() {
 		w.Write([]byte(newLine + "\n"))
 	}
 
-	os.Exit(1)
+	err = w.Flush()
+	if err != nil {
+		fmt.Printf("%v", err)
+		os.Exit(1)
+	}
+
+	os.Exit(2)
 }
