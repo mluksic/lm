@@ -4,35 +4,75 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 )
 
-func main() {
-	fileName := flag.String("f", "", "Target file")
-	prefix := flag.String("p", "", "Prefix the lines")
-	suffix := flag.String("s", "", "Suffix the lines")
-	flag.Parse()
+type Reader interface {
+	Read() ([]byte, error)
+}
 
-	file, err := os.Open(*fileName)
+type StdinReader struct {
+	reader *bufio.Reader
+}
+
+func NewStdinReader() *StdinReader {
+	r := bufio.NewReader(os.Stdin)
+
+	return &StdinReader{reader: r}
+}
+func (r *StdinReader) Read() ([]byte, error) {
+	bytes, _, err := r.reader.ReadLine()
+
+	return bytes, err
+}
+
+type FileReader struct {
+	reader *bufio.Reader
+}
+
+func NewFileReader(filename string) *FileReader {
+	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		fmt.Printf("%v", err)
 		os.Exit(1)
 	}
-	defer file.Close()
 
-	newFile, err := os.Create(*fileName + "_output")
+	r := bufio.NewReader(file)
+
+	return &FileReader{reader: r}
+}
+func (r *FileReader) Read() ([]byte, error) {
+	bytes, _, err := r.reader.ReadLine()
+
+	return bytes, err
+}
+
+func main() {
+	filename := flag.String("f", "", "Target file")
+	prefix := flag.String("p", "", "Prefix the lines with content")
+	suffix := flag.String("s", "", "Suffix the lines with content")
+	flag.Parse()
+
+	var reader Reader
+	if *filename != "" {
+		reader = NewFileReader(*filename)
+	} else {
+		reader = NewStdinReader()
+	}
+
+	newFile, err := os.Create("output")
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(1)
 	}
 	defer newFile.Close()
 
-	r := bufio.NewReader(file)
 	w := bufio.NewWriter(newFile)
 
 	for {
-		line, _, err := r.ReadLine()
-		if err != nil {
+		line, err := reader.Read()
+		if err == io.EOF {
 			break
 		}
 
@@ -47,7 +87,11 @@ func main() {
 			newLine = *prefix + string(line) + *suffix
 		}
 
-		w.Write([]byte(newLine + "\n"))
+		_, err = w.Write([]byte(newLine + "\n"))
+		if err != nil {
+			fmt.Printf("%v", err)
+			os.Exit(1)
+		}
 	}
 
 	err = w.Flush()
