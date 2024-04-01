@@ -9,9 +9,8 @@ import (
 
 func main() {
 	fileName := flag.String("f", "", "Target file")
-	prefix := flag.Bool("p", false, "Should prefix to lines")
-	suffix := flag.Bool("a", false, "Should suffix to lines")
-	content := flag.String("c", "", "Content to prefix/append")
+	prefix := flag.String("p", "", "Prefix the lines")
+	suffix := flag.String("s", "", "Suffix the lines")
 	flag.Parse()
 
 	file, err := os.Open(*fileName)
@@ -38,11 +37,11 @@ func main() {
 		}
 
 		var newLine string
-		if *prefix == true {
-			newLine = *content + string(line)
+		if *prefix != "" {
+			newLine = *prefix + string(line)
 		}
-		if *suffix == true {
-			newLine = string(line) + *content
+		if *suffix != "" {
+			newLine = string(line) + *suffix
 		}
 
 		w.Write([]byte(newLine + "\n"))
