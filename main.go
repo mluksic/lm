@@ -54,12 +54,7 @@ func main() {
 	suffix := flag.String("s", "", "Suffix the lines with content")
 	flag.Parse()
 
-	var reader Reader
-	if *filename != "" {
-		reader = NewFileReader(*filename)
-	} else {
-		reader = NewStdinReader()
-	}
+	reader := initReader(*filename)
 
 	newFile, err := os.Create("output")
 	if err != nil {
@@ -101,4 +96,13 @@ func main() {
 	}
 
 	os.Exit(0)
+}
+
+func initReader(filename string) Reader {
+	switch {
+	case "" != filename:
+		return NewFileReader(filename)
+	default:
+		return NewStdinReader()
+	}
 }
